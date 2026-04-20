@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>AR観察側</title>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
+</head>
+<body style="margin: 0; overflow: hidden;">
+    <div style="position: fixed; top: 10px; left: 10px; z-index: 1000; background: rgba(255,255,255,0.8); padding: 10px; border-radius: 5px;">
+        <button id="connectBtn" style="padding: 10px;">2. センサーと接続</button>
+        <div id="info" style="font-size: 12px; margin-top: 5px;">未接続</div>
+    </div>
+
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
+        <a-marker preset="hiro">
+            <a-entity id="vectorGroup">
+                <a-cylinder position="0 0.5 0" radius="0.05" height="1" color="#FF9800"></a-cylinder>
+                <a-cone position="0 1 0" radius-bottom="0.1" height="0.2" color="#FF9800"></a-cone>
+            </a-entity>
+        </a-marker>
+        <a-entity camera></a-entity>
+    </a-scene>
+
+    <script>
+        const peer = new Peer();
+        const vectorGroup = document.getElementById('vectorGroup');
+        const info = document.getElementById('info');
+
+        document.getElementById('connectBtn').addEventListener('click', () => {
+            const conn = peer.connect('science-sensor-room-1');
+            conn.on('open', () => {
+                info.innerText = "接続成功！実験開始！";
+                conn.on('data', (data) => {
+                    let length = Math.sqrt(data.x**2 + data.y**2 + data.z**2) * 0.3;
+                    vectorGroup.setAttribute('scale', `1 ${length + 0.1} 1`);
+                    vectorGroup.setAttribute('rotation', `${data.y * 15} 0 ${-data.x * 15}`);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
